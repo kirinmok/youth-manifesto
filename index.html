@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="青春宣言製造所 — 填一填就自動生成 AI 生圖咒語，複製貼到 ChatGPT。">
+<title>宣言咒語製造機｜青春宣言製造所</title>
+<style>
+  :root{
+    --ink:#17181d; --paper:#f7f5ef; --muted:#71757c; --red:#ff4b3a; --redink:#d8321f;
+    --yellow:#ffcf33; --line:#e4e0d6; --card:#ffffff; --field:#faf9f4;
+    --shadow:0 8px 26px rgba(20,20,25,.10);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--ink:#f1f0ec;--paper:#131418;--muted:#969aa2;--red:#ff5c4c;--redink:#ff7a6b;
+      --yellow:#ffd75a;--line:#2b2d34;--card:#1b1c22;--field:#212329;--shadow:0 10px 30px rgba(0,0,0,.5)}
+  }
+  :root[data-theme="light"]{--ink:#17181d;--paper:#f7f5ef;--muted:#71757c;--red:#ff4b3a;--redink:#d8321f;--yellow:#ffcf33;--line:#e4e0d6;--card:#fff;--field:#faf9f4;--shadow:0 8px 26px rgba(20,20,25,.10)}
+  :root[data-theme="dark"]{--ink:#f1f0ec;--paper:#131418;--muted:#969aa2;--red:#ff5c4c;--redink:#ff7a6b;--yellow:#ffd75a;--line:#2b2d34;--card:#1b1c22;--field:#212329;--shadow:0 10px 30px rgba(0,0,0,.5)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.5}
+  .wrap{max-width:900px;margin:0 auto;padding:22px 18px 160px}
+  header{border-bottom:3px solid var(--red);padding-bottom:12px;margin-bottom:20px}
+  .ey{color:var(--red);font-weight:800;letter-spacing:.16em;font-size:.78rem;text-transform:uppercase}
+  h1{margin:.15em 0 0;font-size:clamp(1.6rem,4.5vw,2.4rem);font-weight:900;letter-spacing:-.01em}
+  .tag{color:var(--muted);font-size:.95rem;margin-top:.3em}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 16px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .step h2{margin:0 0 4px;font-size:1.02rem;display:flex;align-items:center;gap:.5em}
+  .num{background:var(--red);color:#fff;width:1.55em;height:1.55em;border-radius:50%;display:grid;place-items:center;font-size:.85em;font-weight:800;flex:none}
+  .sub{color:var(--muted);font-size:.83rem;margin:0 0 10px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1.5px solid var(--line);background:var(--field);color:var(--ink);border-radius:999px;
+    padding:7px 14px;font-size:.95rem;cursor:pointer;font-weight:600;transition:.12s;user-select:none}
+  .chip:hover{border-color:var(--red)}
+  .chip[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 3px 10px rgba(255,75,58,.35)}
+  input[type=text]{margin-top:9px;width:100%;border:1.5px solid var(--line);background:var(--field);color:var(--ink);
+    border-radius:10px;padding:10px 12px;font-size:1rem;font-family:inherit}
+  input[type=text]:focus{outline:none;border-color:var(--red)}
+  .declare input{font-size:1.15rem;font-weight:700}
+  .ratio .chips .chip{font-weight:800}
+
+  .out{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--red);
+    box-shadow:0 -8px 30px rgba(0,0,0,.14);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .out .inner{max-width:900px;margin:0 auto}
+  .out .row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .out .ttl{font-weight:800;color:var(--red);font-size:.9rem}
+  .spacer{flex:1}
+  textarea{width:100%;border:1.5px solid var(--line);background:var(--field);color:var(--ink);border-radius:10px;
+    padding:11px 12px;font-size:.98rem;line-height:1.55;font-family:inherit;resize:vertical;min-height:64px}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+  button.act,a.act{border:none;border-radius:10px;padding:11px 16px;font-size:.98rem;font-weight:800;cursor:pointer;
+    font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:.4em}
+  .primary{background:var(--red);color:#fff}
+  .primary:hover{background:var(--redink)}
+  .ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+  .ghost:hover{border-color:var(--red)}
+  .gochat{background:var(--ink);color:var(--paper)}
+  .mini{font-size:.8rem;color:var(--muted);margin-top:6px}
+  .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%) translateY(-80px);background:var(--ink);color:var(--paper);
+    padding:10px 18px;border-radius:999px;font-weight:800;opacity:0;transition:.3s;z-index:9}
+  .toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+  .safe{background:color-mix(in srgb,var(--yellow) 22%,transparent);border:1px solid color-mix(in srgb,var(--yellow) 60%,var(--line));
+    border-radius:12px;padding:10px 14px;font-size:.85rem;color:var(--ink)}
+  .safe b{color:var(--redink)}
+  .langtabs{display:flex;gap:6px}
+  .langtabs button{border:1.5px solid var(--line);background:var(--field);color:var(--muted);border-radius:8px;padding:5px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:.85rem}
+  .langtabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">已複製！</div>
+
+<div class="wrap">
+  <header>
+    <div class="ey">青春宣言製造所 · 畫面之鑰 🔑</div>
+    <h1>宣言咒語製造機</h1>
+    <div class="tag">選一選、填一填 → 自動變成一句咒語 → 複製貼給 ChatGPT 生成你的畫面。</div>
+  </header>
+
+  <div class="step declare">
+    <h2><span class="num">1</span>你的宣言是？</h2>
+    <p class="sub">就是你這支短片想說的那一句話。畫面會呼應它的「感覺」（不用把字放進圖裡）。</p>
+    <input type="text" id="declare" placeholder="例：我不是沒夢想，只是不想被你決定。">
+  </div>
+
+  <div class="step">
+    <h2><span class="num">2</span>畫面主角是誰？</h2>
+    <p class="sub">不一定要露臉。背影、一雙手、一個物件，常常更有味道。</p>
+    <div class="chips" data-key="subject" data-single></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">3</span>在哪裡？</h2>
+    <p class="sub">選一個，或自己打一個更貼近你的地方。</p>
+    <div class="chips" data-key="place" data-single></div>
+    <input type="text" id="placeCustom" placeholder="或自己打：例 學校頂樓、阿嬤家的巷子…">
+  </div>
+
+  <div class="step">
+    <h2><span class="num">4</span>什麼光線 / 時間？</h2>
+    <p class="sub">光線決定情緒。黃昏很暖、夜晚霓虹很酷、逆光很有態度。</p>
+    <div class="chips" data-key="light" data-single></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">5</span>什麼心情？</h2>
+    <p class="sub">配合你的宣言，選一個最像的。可以冷、可以叛逆、可以累但沒放棄。</p>
+    <div class="chips" data-key="mood" data-single></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">6</span>什麼風格？</h2>
+    <div class="chips" data-key="style" data-single></div>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">7</span>加一個亮點細節（可選）</h2>
+    <p class="sub">一個小細節就能讓畫面「活」起來。</p>
+    <div class="chips" data-key="detail" data-single></div>
+    <input type="text" id="detailCustom" placeholder="或自己打：例 手上握著舊球票、窗上有霧…">
+  </div>
+
+  <div class="step ratio">
+    <h2><span class="num">8</span>畫面比例</h2>
+    <p class="sub">成果展建議大家統一用 <b>16:9</b>（一起播最整齊）。想做限動就選直式、想要方形就選 1:1，之後隨時可改。</p>
+    <div class="chips" data-key="ratio" data-single></div>
+  </div>
+
+  <div class="safe">
+    <b>創作安全：</b>不要放真實同學的臉、不要影射特定同學。生成的是「象徵你心情的畫面」，不是真人照片。
+  </div>
+</div>
+
+<div class="out">
+  <div class="inner">
+    <div class="row">
+      <span class="ttl">🪄 你的咒語</span>
+      <div class="langtabs">
+        <button id="tabZh" aria-pressed="true" type="button">中文</button>
+        <button id="tabEn" aria-pressed="false">English</button>
+      </div>
+      <span class="spacer"></span>
+    </div>
+    <textarea id="output" rows="3" readonly></textarea>
+    <div class="btns">
+      <button class="act primary" id="copyBtn">📋 複製咒語</button>
+      <a class="act gochat" id="chatBtn" href="https://chatgpt.com" target="_blank" rel="noopener">前往 ChatGPT →</a>
+      <button class="act ghost" id="resetBtn">重來</button>
+    </div>
+    <div class="mini">複製後，到 ChatGPT 貼上，直接送出就會生成圖片。不滿意就回來換選項、再複製一次。</div>
+  </div>
+</div>
+
+<script>
+  const DATA={
+    subject:[
+      {zh:"我自己（正面）",en:"a teenager facing the camera"},
+      {zh:"我的背影",en:"a teenager seen from behind"},
+      {zh:"一雙手",en:"a close-up of a pair of hands"},
+      {zh:"一個對我有意義的物件",en:"a meaningful personal object, no people"},
+      {zh:"只有場景、沒有人",en:"an empty scene, no people"}
+    ],
+    place:[
+      {zh:"教室 / 走廊",en:"a school classroom or hallway"},
+      {zh:"操場",en:"a school sports field"},
+      {zh:"頂樓",en:"a rooftop"},
+      {zh:"我的房間",en:"a teenager's bedroom"},
+      {zh:"公車站",en:"a bus stop"},
+      {zh:"夜晚的街道",en:"a city street at night"},
+      {zh:"海邊",en:"a seaside"},
+      {zh:"便利商店",en:"a convenience store"}
+    ],
+    light:[
+      {zh:"清晨微光",en:"soft early-morning light"},
+      {zh:"正午強光",en:"harsh midday sunlight"},
+      {zh:"黃昏金光",en:"warm golden-hour light, long shadows"},
+      {zh:"夜晚霓虹",en:"neon lights at night, cyberpunk glow"},
+      {zh:"陰天灰藍",en:"overcast, cool grey-blue light"},
+      {zh:"逆光剪影",en:"strong backlight, silhouette"}
+    ],
+    mood:[
+      {zh:"冷淡",en:"cool and detached"},
+      {zh:"倔強",en:"stubborn and determined"},
+      {zh:"熱血",en:"energetic and passionate"},
+      {zh:"迷惘",en:"lost and uncertain"},
+      {zh:"自由",en:"free and light"},
+      {zh:"累但沒放棄",en:"tired but not giving up"},
+      {zh:"叛逆",en:"rebellious"},
+      {zh:"平靜",en:"calm and quiet"}
+    ],
+    style:[
+      {zh:"寫實電影感",en:"photorealistic cinematic"},
+      {zh:"日系動畫",en:"Japanese anime"},
+      {zh:"手繪水彩",en:"hand-painted watercolor"},
+      {zh:"復古底片",en:"retro film photography"},
+      {zh:"黑白紀實",en:"black-and-white documentary"},
+      {zh:"乾淨簡約",en:"clean minimalist"}
+    ],
+    detail:[
+      {zh:"風吹頭髮 / 衣角",en:"hair and clothes blown by wind"},
+      {zh:"長長的影子",en:"long dramatic shadows"},
+      {zh:"雨滴",en:"raindrops"},
+      {zh:"逆光光暈",en:"backlit glow and lens flare"},
+      {zh:"散景光點",en:"soft bokeh light spots"},
+      {zh:"大量留白",en:"lots of empty space, minimal composition"}
+    ],
+    ratio:[
+      {zh:"16:9 橫式",en:"16:9 wide",ar:"16:9"},
+      {zh:"9:16 直式（限動）",en:"9:16 vertical",ar:"9:16"},
+      {zh:"1:1 方形",en:"1:1 square",ar:"1:1"}
+    ]
+  };
+
+  const state={subject:null,place:null,light:null,mood:null,style:null,detail:null,ratio:5};
+  // set default ratio index
+  state.ratio=0;
+  let lang="zh";
+
+  document.querySelectorAll('.chips').forEach(box=>{
+    const key=box.dataset.key;
+    DATA[key].forEach((opt,idx)=>{
+      const b=document.createElement('button');
+      b.className='chip'; b.type='button'; b.textContent=opt.zh; b.setAttribute('aria-pressed','false');
+      b.addEventListener('click',()=>{
+        const cur=state[key];
+        if(cur===idx && key!=='ratio'){ state[key]=null; } else { state[key]=idx; }
+        box.querySelectorAll('.chip').forEach((c,i)=>c.setAttribute('aria-pressed', state[key]===i));
+        render();
+      });
+      box.appendChild(b);
+    });
+    if(key==='ratio'){ box.querySelectorAll('.chip')[0].setAttribute('aria-pressed','true'); }
+  });
+
+  const declare=document.getElementById('declare');
+  const placeCustom=document.getElementById('placeCustom');
+  const detailCustom=document.getElementById('detailCustom');
+  [declare,placeCustom,detailCustom].forEach(el=>el.addEventListener('input',render));
+
+  function pick(key){ return state[key]!=null ? DATA[key][state[key]] : null; }
+
+  function buildZh(){
+    const st=pick('style'), su=pick('subject'), li=pick('light'), mo=pick('mood'), de=pick('detail'), ra=DATA.ratio[state.ratio];
+    const place = placeCustom.value.trim() || (pick('place')?pick('place').zh:'');
+    const detail = detailCustom.value.trim() || (de?de.zh:'');
+    const dec = declare.value.trim();
+    let parts=[];
+    if(st) parts.push(st.zh+"風格");
+    if(su) parts.push(su.zh);
+    if(place) parts.push("在"+place);
+    if(li) parts.push(li.zh);
+    if(mo) parts.push("散發「"+mo.zh+"」的氣氛");
+    if(detail) parts.push(detail);
+    let s = parts.join("，");
+    if(dec) s += (s?"。":"")+"整體感覺要呼應這句話：「"+dec+"」（氣氛就好，不用把字放進畫面）";
+    if(s) s += "。"+ra.zh.split("（")[0]+"，畫面乾淨、高品質、不要浮水印、不要多餘文字。";
+    return s;
+  }
+  function buildEn(){
+    const st=pick('style'), su=pick('subject'), li=pick('light'), mo=pick('mood'), de=pick('detail'), ra=DATA.ratio[state.ratio];
+    const place = placeCustom.value.trim() || (pick('place')?pick('place').en:'');
+    const detail = detailCustom.value.trim() || (de?de.en:'');
+    const dec = declare.value.trim();
+    let parts=[];
+    if(st) parts.push(st.en+" style");
+    if(su) parts.push(su.en);
+    if(place) parts.push("at "+place);
+    if(li) parts.push(li.en);
+    if(mo) parts.push("a "+mo.en+" mood");
+    if(detail) parts.push(detail);
+    let s=parts.join(", ");
+    if(s) s+=", cinematic, high detail, clean composition, no watermark, no text, "+ra.ar;
+    if(dec) s+="  (overall feeling echoes: \""+dec+"\")";
+    return s;
+  }
+  function render(){
+    const out=document.getElementById('output');
+    out.value = lang==='zh' ? buildZh() : buildEn();
+  }
+
+  document.getElementById('tabZh').addEventListener('click',()=>setLang('zh'));
+  document.getElementById('tabEn').addEventListener('click',()=>setLang('en'));
+  function setLang(l){ lang=l;
+    document.getElementById('tabZh').setAttribute('aria-pressed',l==='zh');
+    document.getElementById('tabEn').setAttribute('aria-pressed',l==='en');
+    render();
+  }
+
+  function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),1600); }
+  document.getElementById('copyBtn').addEventListener('click',async()=>{
+    const txt=document.getElementById('output').value;
+    if(!txt){ toast('先選幾個選項吧！'); return; }
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){ const ta=document.getElementById('output'); ta.removeAttribute('readonly'); ta.select(); document.execCommand('copy'); ta.setAttribute('readonly','readonly'); }
+    toast('已複製！去 ChatGPT 貼上');
+  });
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    Object.keys(state).forEach(k=>state[k]=k==='ratio'?0:null);
+    declare.value=''; placeCustom.value=''; detailCustom.value='';
+    document.querySelectorAll('.chips').forEach(box=>{
+      box.querySelectorAll('.chip').forEach((c,i)=>c.setAttribute('aria-pressed', box.dataset.key==='ratio'&&i===0));
+    });
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
