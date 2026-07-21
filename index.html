@@ -41,6 +41,9 @@
   input[type=text]:focus{outline:none;border-color:var(--red)}
   .declare input{font-size:1.15rem;font-weight:700}
   .ratio .chips .chip{font-weight:800}
+  .dice{margin-top:10px;border:1.5px dashed var(--red);background:transparent;color:var(--red);border-radius:10px;
+    padding:8px 14px;font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit}
+  .dice:hover{background:var(--red);color:#fff}
 
   .out{position:sticky;top:18px;width:380px;flex:none;background:var(--card);border:1px solid var(--line);
     border-radius:14px;box-shadow:var(--shadow);padding:16px;max-height:calc(100vh - 36px);overflow:auto}
@@ -122,7 +125,9 @@
 
   <div class="step">
     <h2><span class="num">6</span>什麼風格？</h2>
+    <p class="sub">全班很多人選日系動畫——選別的，你的作品才不會撞款。</p>
     <div class="chips" data-key="style" data-single></div>
+    <button class="dice" id="diceStyle" type="button">🎲 隨機給我一個沒試過的風格</button>
   </div>
 
   <div class="step">
@@ -206,10 +211,17 @@
     style:[
       {zh:"寫實電影感",en:"photorealistic cinematic"},
       {zh:"日系動畫",en:"Japanese anime"},
+      {zh:"美式漫畫",en:"bold American comic book with ink outlines"},
       {zh:"手繪水彩",en:"hand-painted watercolor"},
-      {zh:"復古底片",en:"retro film photography"},
-      {zh:"黑白紀實",en:"black-and-white documentary"},
-      {zh:"乾淨簡約",en:"clean minimalist"}
+      {zh:"復古底片",en:"retro 90s film photography, grain"},
+      {zh:"黑白紀實",en:"black-and-white documentary photography"},
+      {zh:"拼貼雜誌風",en:"cut-and-paste magazine zine collage"},
+      {zh:"街頭塗鴉",en:"street graffiti spray-paint art"},
+      {zh:"3D 立體感",en:"3D rendered, Pixar-like"},
+      {zh:"極簡海報",en:"minimalist flat graphic poster, bold shapes"},
+      {zh:"賽博霓虹",en:"cyberpunk neon"},
+      {zh:"粉彩夢幻",en:"soft dreamy pastel illustration"},
+      {zh:"版畫絹印",en:"risograph screenprint, limited 2-3 color palette"}
     ],
     detail:[
       {zh:"風吹頭髮 / 衣角",en:"hair and clothes blown by wind"},
@@ -315,6 +327,16 @@
     document.querySelectorAll('.chips').forEach(box=>{
       box.querySelectorAll('.chip').forEach((c,i)=>c.setAttribute('aria-pressed', box.dataset.key==='ratio'&&i===0));
     });
+    render();
+  });
+
+  document.getElementById('diceStyle').addEventListener('click',()=>{
+    const n=DATA.style.length; let i=Math.floor(Math.random()*n);
+    if(n>1 && i===state.style){ i=(i+1)%n; }
+    state.style=i;
+    const box=document.querySelector('.chips[data-key="style"]');
+    box.querySelectorAll('.chip').forEach((c,k)=>c.setAttribute('aria-pressed', k===i));
+    box.querySelectorAll('.chip')[i].scrollIntoView({block:'nearest',inline:'nearest'});
     render();
   });
 
